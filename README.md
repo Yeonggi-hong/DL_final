@@ -4,7 +4,7 @@
     pip install requirements.txt
 
 ## Training
-    python training.py --freeze 0 --opt 'ADAM' --lr 0.0001 --sch 'True' --aug 'True' --data_flags 'raw_data' --data_aug 'raw' --pretrained yes --num_head 4
+    python training.py --freeze 0 --opt 'ADAM' --lr 0.0001 --sch 'True' --pretrained yes --num_head 4
 #### '--batch_size', type=int, default=700, help='Batch size.'
 #### '--lr', type=float, default=0.001, help='Initial learning rate for adam.'
 #### '--workers', default=2, type=int, help='Number of data loading workers.'

@@ -16,9 +16,9 @@
 #### '--pretrained', type=str
 
 
-## Val 
+## Validation 
     python val.py
 
 
-## Ensemble Val
+## Ensemble Validation
     python ensemble_val.py

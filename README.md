@@ -1,5 +1,5 @@
 # DL Final
-## dependency
+## Dependency
     python version 3.8.12
     pip install requirements.txt
 

@@ -14,33 +14,23 @@ import numpy as np
 from matplotlib import pyplot as plt
 import itertools
 import glob
-#from natsorted import natsorted
-path = "./pretrained/" # pretrained model path
-#img_path = "../cropped_aligned/"
 
-weight_list= []
-weight_list=(glob.glob(path+'*.pth')) #
-#weight_list = os.listdir(path)
+path = "./pretrained/" # pretrained model path
+weight_list=glob.glob(path+'*.pth') # model path load 
 print(weight_list)
 
 class Model() :
     def __init__(self) :
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-        
         self.all_models = []
-        #self.all_models = self.load_all_models(weight_list)
-        #self.load_all_models(weight_list)
-        
         self.load_all_models(weight_list,4)
-    #def load_all_models(self, weight_list):    
     def load_all_models(self, weight_list,num_head):
         
-        for model_name in weight_list:
+        for model_name in weight_list: # make model load list 
             model = DAN_ab(num_head=num_head, num_class=8,pretrained=True)
 
             weight = model_name
             checkpoint = torch.load(weight)
-            #model.load_state_dict(checkpoint['model_state_dict'],strict=True)
             if isinstance(model, nn.DataParallel): # GPU 병렬사용 적용 
                 model.load_state_dict(checkpoint['model_state_dict'], strict=False) 
             else: # GPU 병렬사용을 안할 경우 
@@ -71,16 +61,13 @@ class Model() :
 
         with torch.set_grad_enabled(False):
             img = img.to(self.device)
-            #targets = targets.to(self.device)
             outs = None
-            for i in self.all_models:
+            for i in self.all_models: # soft voting 구현 
                 out, _, _ = i(img)
                 if(outs == None):
-                    #print("들어왔니?")
                     outs=out
                 else:
-                    #print("너두?")
-                    outs+=out
+                    outs+=out  
 
             _, pred = torch.max(outs,1)
             index = pred.cpu()
@@ -131,28 +118,16 @@ def plot_confusion_matrix(cm, plt_name, target_names=None, cmap=None, normalize=
     plt.close()
 
 if __name__ == "__main__":
-    #data = load_data()
-    #model = load_all_models(weight_list)
-    #print(len(model))
+
     model = Model()
-    # ad = []
-    # ad.append(weight_list[2])
-    # model_ = model.load_all_models(ad)
-    #model.load_all0_models(weight_list)
+
     data_transforms_val = transforms.Compose([
-        #transforms.ToPILImage(mode=None),
         transforms.Resize((224, 224)),
         transforms.ToTensor(),
-        
         transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                  std=[0.229, 0.224, 0.225])])   
     print("Generate val data set")
-    #val_dataset = RafDataSet(X_val, y_val, transform = data_transforms_val)  
-    #
-    
     val_dataset = ImageFolder("./datasets/fulldatasets/val",transform = data_transforms_val)
-    #print('Validation set size:', val_dataset.__len__())
-    
     val_loader = torch.utils.data.DataLoader(val_dataset,
                                                batch_size =  500,
                                                num_workers = 1,
@@ -173,35 +148,28 @@ if __name__ == "__main__":
             imgs = imgs.float()
             targets_ =targets
             targets = torch.eye(8)[targets]
-            #targets = torch.eye(8)[targets]
-            
     
             predicts, size = model.fit(imgs)
             sample_cnt += size
             iter_cnt+=1
-            #print(predicts)
             correct_num  = torch.eq(predicts.cpu(),targets.argmax(axis=1))
             bingo_cnt += correct_num.sum().cpu()
             
             for p, t in zip(predicts, targets) :
                 p_.append(p.cpu())
-                t_.append(t.argmax().cpu())
-            #running_f1+=f1_score(targets.cpu().detach().numpy().argmax(axis=1),predicts.cpu().detach().numpy(),average="macro")
-            
+                t_.append(t.argmax().cpu())            
             baccs.append(balanced_accuracy_score(targets.cpu().numpy().argmax(axis=1),predicts.cpu().numpy()))
         running_loss = running_loss/iter_cnt   
         
         f1=[]
-        #print(temp_exp_pred)
+
         temp_exp_pred = np.array(p_)
         temp_exp_target = np.array(t_)
         temp_exp_pred = torch.eye(8)[temp_exp_pred]
         temp_exp_target = torch.eye(8)[temp_exp_target]
         for i in range(0,8):
-            #print(temp_exp_pred)
             exp_pred = temp_exp_pred[:,i]
             exp_target = temp_exp_target[:,i]
-            
             f1.append(f1_score(exp_pred,exp_target))
 
 
@@ -213,6 +181,6 @@ if __name__ == "__main__":
         tqdm.write("Validation accuracy:%.4f. bacc:%.4f. Loss:%.3f f1 :%.5f " % ( acc, bacc, running_loss,running_f1))
 
         print(f1)
-        cm = confusion_matrix(t_, p_)
-        plot_confusion_matrix(cm, "TL_weak__single_numhead_"+str(len_n)+"_cm", normalize = False, target_names = ['neutral', 'anger', 'disgust', 'fear', 'happiness', 'sadness', 'surprise', 'other'])
+        #cm = confusion_matrix(t_, p_)
+        #plot_confusion_matrix(cm, "TL_weak__single_numhead_cm", normalize = False, target_names = ['neutral', 'anger', 'disgust', 'fear', 'happiness', 'sadness', 'surprise', 'other'])
 
